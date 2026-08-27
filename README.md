@@ -42,3 +42,8 @@ A lot of the .md files were claude's idea to add :/
 ```bash
 git clone https://github.com/BRGOVIND/mineBro.git
 cd mineBro
+```
+
+## Gameplay
+
+![MineBro gameplay](docs/images/gameplay.png)

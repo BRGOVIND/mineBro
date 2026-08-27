@@ -1,8 +1,7 @@
 # MineBro
 
-MineBro is an AI companion for Minecraft Java Edition. It answers questions and performs a
-small set of real in-game actions - checking inventory, looking up recipes, crafting - using
-Minecraft's actual game state as the source of truth rather than a language model's guess.
+MineBro is an AI companion for Minecraft Java Edition. So its not that big of a deal, as a longtime minecraft player i would never use this.
+But for someone starting out and if they dont like to take time and figure out every bits and pieaces on their own, mineBro is for them.
 
 The model reasons and phrases answers; deterministic Java code reads and mutates the game and
 decides success or failure. The model never invents an inventory count, a recipe, or a
@@ -32,24 +31,6 @@ architecture) and [`docs/DESIGN.md`](docs/DESIGN.md) (UI/UX design).
 - Gradle with Fabric Loom
 - Ollama or any OpenAI-compatible HTTP endpoint (LM Studio, llama.cpp, vLLM, OpenRouter, OpenAI)
 
-## Architecture
-
-```
-/minebro <question> -> AgentLoop -> AIProvider -> tools -> Minecraft state -> ToolResult -> chat
-```
-
-The AI model can only call a fixed set of tools (inventory lookup, recipe lookup, crafting,
-etc.). Every tool reads or mutates the real game and returns a structured result; the model
-never has direct access to game state or execution. See `docs/ARCHITECTURE.md` for the full
-design, including the provider abstraction, threading model, and hallucination mitigations.
-
-Source layout:
-
-```
-src/main/java/com/minebro/            common: provider, tool, agent, recipe, context, config
-src/client/java/com/minebro/client/   client-only: HUD, screens, keybinds, commands, bridges
-src/test/java/com/minebro/            unit tests
-```
 
 ## Installation and Setup
 
@@ -161,17 +142,16 @@ Example: pointing MineBro at a self-hosted OpenAI-compatible server instead of a
 ```
 
 `/minebro status` reports whether the current provider is reachable and (for cloud/custom
-providers) whether an API key is configured. `/minebro models` lists models the provider
-reports, when it supports discovery - a provider that doesn't is not a problem, since any
-model name can always be entered directly in the config file.
+providers) whether an API key is configured.
+`/minebro models` lists models the provider reports, when it supports discovery - a provider that doesn't is not a problem, since any model name can always be entered directly in the config file.
 
 MineBro is not limited to a fixed list of "supported" cloud vendors - it supports its two
-built-in adapters (Ollama, and any server implementing the OpenAI-compatible shape above)
+built-in adapters (Ollama, and any server implementing the OpenAI-compatible shape above) thats what it was made for first, 
 through configuration, without source changes. It does not claim to support arbitrary,
 differently-shaped APIs (e.g. Anthropic's or Google's own message formats) unless a dedicated
 adapter for them is actually implemented.
 
-## Usage
+## Usage ( Use it well, I'd still recommend playing the game urself )
 
 | Command | Description |
 |---|---|
@@ -196,33 +176,9 @@ Only free-text questions are routed through the model.
 .\gradlew.bat test        # run unit tests
 ```
 
-## Testing
+## Architecture
 
-Unit tests cover pure logic: ingredient aggregation, JSON tool-call parsing, provider
-request/response shaping, tool executor gate order, cancellation, and the tool-result contract.
-Run with:
-
-```powershell
-.\gradlew.bat test
-```
-
-Behavior that depends on live Minecraft state (inventory, recipes, world) is verified manually
-through the development client, since constructing real Minecraft registry objects in a unit
-test requires a full game bootstrap that is not available in the test environment.
-
-## Current Limitations
-
-- Crafting requires a crafting table to be within reach for 3x3 recipes; recipes are executed
-  against the player's inventory rather than through a rendered crafting grid.
-- No native provider tool-calling; MineBro always uses a JSON-prompt convention for
-  compatibility across models.
-- Raising the permission level in the settings screen takes effect immediately for the tool
-  execution gate, but newly permitted tools are not advertised to the model until Minecraft
-  is restarted.
-- Movement, block placing/breaking, container interaction, and combat are not implemented.
-- Multiplayer and dedicated servers are out of scope; crafting is restricted to local
-  singleplayer worlds.
-
+guys if someones actually going througgh it, read architecture.md, I made claude draft it.
 See `docs/ARCHITECTURE.md` for the full roadmap.
 
 ## Contributing

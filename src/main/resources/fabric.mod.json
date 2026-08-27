@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "minebro",
+	"version": "${version}",
+	"name": "MineBro",
+	"description": "An AI companion that lives inside Minecraft. Answers questions and performs simple actions (checking inventory, looking up recipes, crafting) using Minecraft's real game state as ground truth, backed by a local (Ollama) or remote (OpenAI-compatible) language model of your choice.",
+	"authors": [
+		"MineBro contributors"
+	],
+	"contact": {},
+	"license": "CC0-1.0",
+	"icon": "assets/minebro/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.minebro.MineBro"
+		],
+		"client": [
+			"com.minebro.client.MineBroClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

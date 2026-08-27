@@ -7,6 +7,8 @@ The model reasons and phrases answers; deterministic Java code reads and mutates
 decides success or failure. The model never invents an inventory count, a recipe, or a
 success/failure result.
 
+A lot of the .md files were claude's idea to add :/
+
 ## Features
 
 - AI backend: Ollama or any OpenAI-compatible API

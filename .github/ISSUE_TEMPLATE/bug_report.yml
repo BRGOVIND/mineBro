@@ -1,0 +1,83 @@
+name: Bug report
+description: Something in MineBro behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report.
+
+        Please do not paste an API key anywhere in this issue. If a log line contains one,
+        redact it before pasting.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what did MineBro do?
+      placeholder: |
+        I ran /minebro craft stick 4 with 2 oak planks in my inventory and it reported success,
+        but no sticks appeared.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Create a new singleplayer creative world
+        2. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: AI provider
+      description: Which provider was configured when this happened?
+      options:
+        - Ollama (local)
+        - OpenAI-compatible
+        - Not applicable — this was a deterministic command
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: The model name from your config, if the model was involved.
+      placeholder: mistral
+
+  - type: input
+    id: minebro-version
+    attributes:
+      label: MineBro version
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: loader-version
+    attributes:
+      label: Minecraft and Fabric Loader version
+      placeholder: Minecraft 1.21.1, Fabric Loader 0.19.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: >
+        From `logs/latest.log` in your Minecraft instance directory. Lines tagged `minebro` are
+        the most useful. This is rendered as code, no backticks needed.
+      render: text

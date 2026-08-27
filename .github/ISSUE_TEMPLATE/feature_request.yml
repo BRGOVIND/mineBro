@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest a capability or improvement for MineBro
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please check `README.md` under "Current Limitations" and
+        `docs/ARCHITECTURE.md` — some capabilities are deliberately out of scope rather than
+        merely unbuilt.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve
+      description: Describe the situation you run into, not just the feature you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like MineBro to do
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - AI provider / model support
+        - Tools and game actions
+        - Chat or settings UI
+        - Commands
+        - Configuration
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: grounding
+    attributes:
+      label: How would this stay grounded in real game state
+      description: >
+        MineBro's core rule is that the model reasons but deterministic code decides what is
+        true. If your request involves a new action or a new fact the model can state, describe
+        how it would be verified against Minecraft rather than taken from model output.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered

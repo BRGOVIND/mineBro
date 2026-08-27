@@ -1,0 +1,3 @@
+# Security problems must not be filed as public issues — see SECURITY.md, which directs
+# reporters to GitHub's private vulnerability reporting on the repository's Security tab.
+blank_issues_enabled: false

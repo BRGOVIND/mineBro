@@ -12,16 +12,12 @@ architecture) and [`docs/DESIGN.md`](docs/DESIGN.md) (UI/UX design).
 
 ## Key Features
 
-- Provider-agnostic AI backend: local (Ollama) or any OpenAI-compatible HTTP endpoint
-- Fully asynchronous request pipeline; never blocks the client thread
-- Deterministic, hallucination-resistant tool execution (inventory, recipes, crafting) backed
-  by real Minecraft state, not model output
-- Verified crafting execution: an action is only reported as successful after the inventory
-  change is confirmed
-- Cancellable in-flight requests
-- In-game chat screen showing tool steps as they execute, and a settings screen that applies
-  provider changes without restarting Minecraft
-- Minimal HUD avatar with state feedback (idle, thinking, error, offline)
+- AI backend: Ollama or any OpenAI-compatible API
+- Async pipeline: Non-blocking and cancellable
+- Grounded tools: Real Minecraft state for inventory, recipes, and crafting
+- Verified actions: Confirms results before reporting success
+- In-game UI: Chat, settings, and live tool execution
+- HUD avatar: Visual feedback for MineBro's state
 
 ## Tech Stack
 
@@ -43,7 +39,7 @@ architecture) and [`docs/DESIGN.md`](docs/DESIGN.md) (UI/UX design).
   - [Ollama](https://ollama.com/) installed locally, or
   - Any OpenAI-compatible HTTP endpoint (LM Studio, llama.cpp `server`, vLLM, OpenRouter, OpenAI)
 
-Fabric Loader is downloaded automatically by the Gradle build; no manual install needed.
+Fabric Loader is downloaded automatically by the Gradle build; Its already in there. dw
 
 ### 1. Clone the project
 
@@ -86,38 +82,10 @@ OpenRouter, OpenAI, or another compatible server.
 
 This launches Minecraft with the mod loaded. MineBro writes its config file on first launch
 (see below).
-
-## Configuration
-
-MineBro writes a config file to `config/minebro/config.json` relative to the Minecraft
-instance directory (in the dev environment: `run/config/minebro/config.json`) on first run.
-Provider, endpoint, model, API key, and permission level can be changed in-game via
-`/minebro settings` and apply immediately. The remaining fields are edited in this file and
-require a restart:
-
-```json
-{
-  "providerId": "ollama",
-  "ollamaEndpoint": "http://localhost:11434",
-  "ollamaModel": "mistral",
-  "openAiCompatEndpoint": "https://api.openai.com/v1",
-  "openAiCompatModel": "gpt-4o-mini",
-  "openAiCompatApiKey": "",
-  "openAiCompatApiKeyEnvVar": "MINEBRO_OPENAI_API_KEY",
-  "permissionLevel": "SAFE_ACTIONS"
-}
-```
-
-- `providerId`: `"ollama"` or `"openai-compatible"`.
-- `openAiCompatApiKeyEnvVar`: name of an environment variable holding the API key (default
-  `MINEBRO_OPENAI_API_KEY`). Preferred over storing the key directly in `openAiCompatApiKey`.
-  The config file lives outside the source tree (under `run/`, which is git-ignored) and is
-  never logged or displayed in full.
-- `permissionLevel`: `READ_ONLY`, `SAFE_ACTIONS`, `GAMEPLAY_ACTIONS`, or `DESTRUCTIVE_ACTIONS`.
-  Default `SAFE_ACTIONS` enables all read-only tools plus crafting.
-
 MineBro does not and will not support ChatGPT Plus or Claude Pro subscriptions; only
 documented HTTP APIs with a user-supplied key, or a local runtime with an HTTP endpoint.
+
+
 
 ## AI Providers
 

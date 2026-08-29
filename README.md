@@ -16,7 +16,7 @@ A lot of the .md files were claude's idea to add :/
 - Grounded Minecraft inventory, recipe, and player state
 - Verified crafting and tool actions
 - In-game chat and settings
-- Floating HUD avatar with live state feedback
+- Animated HUD avatar with live state feedback
 - Deterministic commands that bypass the model when possible
 - Provider switching without restarting Minecraft
 

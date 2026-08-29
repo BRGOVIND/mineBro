@@ -113,6 +113,28 @@ check drives them.
 | ✕ with unsaved edits discards them; the config file is unchanged | UNVERIFIED | |
 | Panel is not clipped at small window sizes / high GUI scale | UNVERIFIED | The panel is a fixed 300x200 and is **not** clamped to the window, unlike the chat panel. Most likely cosmetic defect. |
 
+## Avatar animation
+
+The avatar's rune-orb glyph and every state animation are drawn procedurally, so there is no
+texture to eyeball - these all need a live client.
+
+| Check | Status | Notes |
+|---|---|---|
+| Pressing `B` blooms the badge and grows the panel out of it | UNVERIFIED | The badge now stays on screen behind the chat panel instead of vanishing. |
+| Closing with `B`, `Esc`, and the header's ✕ all collapse identically | UNVERIFIED | All three funnel through `MineBroChatScreen#onClose`; the 120ms collapse is drawn by the HUD, since the screen is already torn down. |
+| `/minebro chat` opens with the same tween as the keybind | UNVERIFIED | Second entry point, stamped inside the deferred `Minecraft#execute` block. |
+| Clicking Send/the input during the 120ms open tween still registers | UNVERIFIED | Widgets are held back from being *drawn* until the panel settles, but are never moved, so hit boxes stay truthful. Confirm a fast click is not lost. |
+| `THINKING` steps the inner rune through 3 positions, aqua, outer glyph stays amber | UNVERIFIED | Stepped, not smoothly spun - a smooth spin would read as a generic web spinner (§13.1). |
+| `WORKING` shows a dot orbiting just outside the glyph | UNVERIFIED | Orbits outside the body rather than §3.1's literal 2px radius, which would be buried inside the 12px glyph. |
+| Subtitle ellipsis animates `.` `..` `...` while thinking | UNVERIFIED | §12.3's redundant, non-colour signal. |
+| `ERROR` shake fires **once** and does not repeat during the 4s hold | UNVERIFIED | Highest-value row here: §3.1 is explicit that a repeating shake reads as an alarm. Point the endpoint at a dead port to trigger it. |
+| `SUCCESS`/`ERROR` crossfade rather than hard-cutting between colours | UNVERIFIED | 200ms, above §13.1's 150ms floor. |
+| Idle flicker is occasional and easy to miss, never a metronome | UNVERIFIED | Interval is unit-tested to stay in 8-12s with irregular gaps; only the *feel* needs a human. |
+| Avatar hidden by `F1` and by every non-MineBro screen | UNVERIFIED | The chat panel is the one screen it deliberately stays visible behind. |
+| Nothing drifts or sticks when `B` is spammed fast | UNVERIFIED | Timelines are wall-clock stamps, so a re-press restamps rather than queueing. |
+| GUI scale 1x-4x: badge and panel stay aligned | UNVERIFIED | Panel geometry is recomputed from the viewport for the ghost, not read off the dead screen instance. |
+| `Motion: reduced` in settings suppresses motion but keeps colour changes | UNVERIFIED | §12.5 gates looping/oscillating/translating motion only; crossfades are meant to survive. |
+
 ## Client stability
 
 | Check | Status | Notes |
@@ -127,8 +149,10 @@ row above marked UNVERIFIED needs you to actually launch `runClient` and play.
 
 The highest-value checks, in order:
 
-1. **The two screens.** Neither can be unit-tested, so every row in those sections is
-   unverified by automation. Opening them at all is the single most informative check.
+1. **The two screens, and the avatar animation.** None of it can be unit-tested, so every row
+   in those sections is unverified by automation. Opening them at all is the single most
+   informative check. For the animation specifically, the `ERROR` shake firing exactly once is
+   the row most likely to be wrong and most annoying if it is.
 2. **3x3 crafting next to a table.** Newly enabled, and it mutates inventory - worth
    confirming the item count actually changes as reported.
 3. **A provider switch applying without a restart.** The mechanism is regression-tested with

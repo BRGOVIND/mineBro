@@ -1,7 +1,9 @@
 package com.minebro.client.screen;
 
+import com.minebro.MineBro;
 import com.minebro.agent.AgentEventSink;
 import com.minebro.client.MineBroClient;
+import com.minebro.client.hud.AvatarAnimation;
 import com.minebro.client.hud.AvatarState;
 import com.minebro.tool.ToolResult;
 import net.minecraft.client.Minecraft;
@@ -48,6 +50,8 @@ public final class MineBroChatScreen extends Screen implements AgentEventSink {
     private static final int BUBBLE_GAP = 3;
     private static final int BADGE = 8;
     private static final int MAX_INPUT_LENGTH = 512;
+    /** How far through the open tween the panel contents appear. */
+    private static final float CONTENT_REVEAL = 0.6f;
 
     private static final int PANEL_BG = 0xE6101010;
     private static final int PANEL_BORDER = 0xFF3A3A3A;
@@ -95,14 +99,26 @@ public final class MineBroChatScreen extends Screen implements AgentEventSink {
         // intentionally empty
     }
 
+    /**
+     * Panel geometry as static functions of the viewport, so {@link #drawCollapsingGhost} can
+     * reproduce exactly the same rectangle after this screen has been torn down.
+     */
+    static int panelWidthFor(int guiWidth) {
+        return Math.min(PANEL_WIDTH, guiWidth - 2 * PANEL_X);
+    }
+
+    static int panelHeightFor(int guiHeight) {
+        return Math.min((int) (guiHeight * 0.6), MAX_PANEL_HEIGHT);
+    }
+
     @Override
     protected void init() {
         if (input != null) {
             carriedInput = input.getValue();
         }
 
-        panelWidth = Math.min(PANEL_WIDTH, this.width - 2 * PANEL_X);
-        panelHeight = Math.min((int) (this.height * 0.6), MAX_PANEL_HEIGHT);
+        panelWidth = panelWidthFor(this.width);
+        panelHeight = panelHeightFor(this.height);
         panelY = (this.height - panelHeight) / 2;
         listTop = panelY + HEADER_HEIGHT;
         listBottom = panelY + panelHeight - INPUT_ROW_HEIGHT;
@@ -139,6 +155,17 @@ public final class MineBroChatScreen extends Screen implements AgentEventSink {
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    /**
+     * Every way out of this screen funnels through here - Esc, the header's X, and the B keybind -
+     * so the collapse animation fires once for all three rather than only for the one path that
+     * remembered to trigger it.
+     */
+    @Override
+    public void onClose() {
+        MineBroClient.avatarAnimation().onPanelClose();
+        super.onClose();
     }
 
     @Override
@@ -275,23 +302,67 @@ public final class MineBroChatScreen extends Screen implements AgentEventSink {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        float open = MineBro.configManager().get().reducedMotion
+                ? 1.0f
+                : MineBroClient.avatarAnimation().openProgress(AvatarAnimation.now());
+
         int right = PANEL_X + panelWidth;
-        int bottom = panelY + panelHeight;
 
-        graphics.fill(PANEL_X, panelY, right, bottom, PANEL_BG);
-        graphics.fill(PANEL_X, panelY, right, panelY + 1, PANEL_BORDER);
-        graphics.fill(PANEL_X, bottom - 1, right, bottom, PANEL_BORDER);
-        graphics.fill(PANEL_X, panelY, PANEL_X + 1, bottom, PANEL_BORDER);
-        graphics.fill(right - 1, panelY, right, bottom, PANEL_BORDER);
-        graphics.fill(PANEL_X + 1, panelY + 1, right - 1, panelY + 3, ACCENT);
+        // The panel grows out of the avatar's HUD position (§13.2). Both sit on the vertical
+        // midline, so a literal slide would travel almost no distance - expanding about that same
+        // midline is what actually reads as "the panel *is* the avatar, expanded".
+        drawPanelChrome(graphics, PANEL_X, right, panelY + panelHeight / 2, panelHeight, open);
 
-        renderHeader(graphics);
-        graphics.fill(PANEL_X + 1, listTop - 1, right - 1, listTop, PANEL_BORDER);
-        graphics.fill(PANEL_X + 1, listBottom, right - 1, listBottom + 1, PANEL_BORDER);
+        // Contents join once the frame is most of the way out. Drawing them earlier would render
+        // full-height text inside a short box, which reads as a clipping bug rather than an
+        // animation - and the whole tween is 120ms, so nothing is actually waiting on this.
+        if (open >= CONTENT_REVEAL) {
+            renderHeader(graphics);
+            graphics.fill(PANEL_X + 1, listTop - 1, right - 1, listTop, PANEL_BORDER);
+            graphics.fill(PANEL_X + 1, listBottom, right - 1, listBottom + 1, PANEL_BORDER);
+            renderMessages(graphics);
+        }
 
-        renderMessages(graphics);
+        // Widgets are deliberately left out of the tween rather than animated with it: EditBox and
+        // Button hit-test against their own fixed bounds, so a widget drawn anywhere other than
+        // where it rests would take clicks at a position it is not being drawn at. They are held
+        // back instead, which keeps their hit boxes truthful. Input still reaches them during the
+        // 120ms - a fast click or keystroke is captured, not swallowed - it simply isn't painted.
+        if (open >= 1.0f) {
+            super.render(graphics, mouseX, mouseY, partialTick);
+        }
+    }
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+    /**
+     * Draws the panel frame at a vertical fraction of its full height, centred on {@code anchorY}.
+     * Shared with the closing ghost, so opening and closing trace the same shape in reverse.
+     */
+    private static void drawPanelChrome(GuiGraphics graphics, int left, int right, int anchorY,
+                                        int fullHeight, float fraction) {
+        int half = Math.max(2, Math.round(fullHeight * Math.max(0.0f, Math.min(1.0f, fraction)) / 2.0f));
+        int top = anchorY - half;
+        int bottom = anchorY + half;
+
+        graphics.fill(left, top, right, bottom, PANEL_BG);
+        graphics.fill(left, top, right, top + 1, PANEL_BORDER);
+        graphics.fill(left, bottom - 1, right, bottom, PANEL_BORDER);
+        graphics.fill(left, top, left + 1, bottom, PANEL_BORDER);
+        graphics.fill(right - 1, top, right, bottom, PANEL_BORDER);
+        graphics.fill(left + 1, top + 1, right - 1, Math.min(top + 3, bottom - 1), ACCENT);
+    }
+
+    /**
+     * The 120ms collapse after this screen closes, drawn by {@code MineBroHud}. By the time it runs
+     * the screen instance is gone, so every dimension is recomputed from the viewport rather than
+     * read off a field - which is why the geometry lives in static helpers.
+     *
+     * @param anchorY  the avatar badge's vertical centre, the point the panel collapses into
+     * @param fraction 1 -> 0 as the collapse completes
+     */
+    public static void drawCollapsingGhost(GuiGraphics graphics, int anchorY, float fraction) {
+        int width = panelWidthFor(graphics.guiWidth());
+        int height = panelHeightFor(graphics.guiHeight());
+        drawPanelChrome(graphics, PANEL_X, PANEL_X + width, anchorY, height, fraction);
     }
 
     private void renderHeader(GuiGraphics graphics) {

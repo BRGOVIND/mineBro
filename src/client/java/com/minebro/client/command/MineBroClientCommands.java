@@ -56,7 +56,13 @@ public final class MineBroClientCommands {
      */
     private static int hello(CommandContext<FabricClientCommandSource> ctx) {
         feedback(ctx, Component.literal("MineBro is alive. Try: /minebro <question>, /minebro inventory, /minebro recipe <item>, /minebro craft <item>, /minebro status, /minebro settings, /minebro models, /minebro stop"));
-        Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(new MineBroChatScreen()));
+        Minecraft.getInstance().execute(() -> {
+            // Stamped here, inside the deferred block, so the tween starts when the panel actually
+            // appears rather than a tick earlier - and so this entry point animates exactly like
+            // the B keybind instead of snapping open.
+            MineBroClient.avatarAnimation().onPanelOpen();
+            Minecraft.getInstance().setScreen(new MineBroChatScreen());
+        });
         return 1;
     }
 

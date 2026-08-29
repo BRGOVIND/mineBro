@@ -32,6 +32,14 @@ public class MineBroConfig {
 
     public boolean debugLogRawResponses = false;
 
+    /**
+     * Suppresses the avatar's looping, oscillating and translating motion (DESIGN.md §12.5): the
+     * idle flicker, the wake bloom, the rune rotation, the orbiting dot, the error shake, and the
+     * chat panel's open/close tween. Colour crossfades are deliberately left running - the doc
+     * classes them as low-vestibular-impact, and they carry state information a player still needs.
+     */
+    public boolean reducedMotion = false;
+
     public String resolveApiKey() {
         if (openAiCompatApiKeyEnvVar != null && !openAiCompatApiKeyEnvVar.isBlank()) {
             String fromEnv = System.getenv(openAiCompatApiKeyEnvVar);

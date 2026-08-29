@@ -5,6 +5,7 @@ import com.minebro.agent.AgentLoop;
 import com.minebro.agent.ConversationController;
 import com.minebro.agent.codec.JsonPromptToolCallCodec;
 import com.minebro.client.command.MineBroClientCommands;
+import com.minebro.client.hud.AvatarAnimation;
 import com.minebro.client.hud.HudAvatarController;
 import com.minebro.client.hud.MineBroHud;
 import com.minebro.client.input.MineBroKeybinds;
@@ -22,6 +23,7 @@ public class MineBroClient implements ClientModInitializer {
     private static AgentLoop agentLoop;
     private static ConversationController conversationController;
     private static HudAvatarController avatarController;
+    private static AvatarAnimation avatarAnimation;
     private static ToolExecutor toolExecutor;
 
     @Override
@@ -39,7 +41,8 @@ public class MineBroClient implements ClientModInitializer {
                 () -> runtime.buildSnapshotJson());
 
         avatarController = new HudAvatarController();
-        new MineBroHud(avatarController).register();
+        avatarAnimation = new AvatarAnimation();
+        new MineBroHud(avatarController, avatarAnimation).register();
 
         MineBroKeybinds.register();
         MineBroClientCommands.register();
@@ -80,6 +83,14 @@ public class MineBroClient implements ClientModInitializer {
 
     public static HudAvatarController avatarController() {
         return avatarController;
+    }
+
+    /**
+     * Presentation-only animation timing for the avatar and chat panel. Client-thread only - see
+     * {@link AvatarAnimation} for why it needs none of {@link HudAvatarController}'s volatility.
+     */
+    public static AvatarAnimation avatarAnimation() {
+        return avatarAnimation;
     }
 
     public static ToolExecutor toolExecutor() {

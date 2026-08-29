@@ -1,5 +1,6 @@
 package com.minebro.client.input;
 
+import com.minebro.client.MineBroClient;
 import com.minebro.client.screen.MineBroChatScreen;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -35,9 +36,12 @@ public final class MineBroKeybinds {
         if (client.player == null) {
             return;
         }
-        if (client.screen instanceof MineBroChatScreen) {
-            client.setScreen(null);
+        if (client.screen instanceof MineBroChatScreen chat) {
+            // Routed through the screen's own onClose rather than setScreen(null) so this path
+            // animates identically to Esc and the header's X.
+            chat.onClose();
         } else if (client.screen == null) {
+            MineBroClient.avatarAnimation().onPanelOpen();
             client.setScreen(new MineBroChatScreen());
         }
     }

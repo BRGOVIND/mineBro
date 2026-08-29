@@ -7,7 +7,28 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Animated avatar.** The HUD badge is now a drawn rune-orb glyph with the full per-state
+  animation set from `docs/DESIGN.md` §3.1: an occasional idle "candle flicker", a stepped
+  inner rune while thinking, an orbiting dot while a tool runs, a one-shot flash on responding,
+  colour crossfades into success and error, a single shake on error, and a fade when offline.
+- **The chat panel grows out of the avatar.** Pressing `B` blooms the badge and expands the
+  panel from it over 120ms, collapsing back on close. The badge now stays visible behind the
+  chat panel instead of disappearing the moment it opens. `Esc`, the header's ✕, the `B`
+  keybind, and `/minebro chat` all animate identically.
+- **`reducedMotion` setting**, toggled from the settings screen or the config file. Suppresses
+  looping, oscillating and translating motion; colour crossfades stay, since they carry state
+  information rather than decoration.
+- Animation timing primitives (`com.minebro.core.anim`) with unit tests, kept free of any
+  Minecraft imports so they are testable under the project's pure-logic test rule.
+
+### Notes
+
+- The glyph is drawn with fill rectangles rather than a sprite sheet. `docs/DESIGN.md` §3.4
+  recommends a texture atlas, reasoning that the rotating rune and orbit dot are unachievable
+  with a font glyph - true of a font glyph, but not of drawing. This keeps the full animation
+  set without a sprite-sheet pipeline, and stays a one-method swap if an atlas is produced.
 
 ## [1.0.0] — 2026-08-27
 

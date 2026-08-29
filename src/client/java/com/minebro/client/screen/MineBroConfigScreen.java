@@ -74,6 +74,7 @@ public final class MineBroConfigScreen extends Screen {
     private String openAiEndpoint;
     private String openAiModel;
     private PermissionLevel permissionLevel;
+    private boolean reducedMotion;
 
     /** True once "Change" is pressed: the stored key is replaced by whatever is typed, on Save. */
     private boolean editingApiKey;
@@ -93,6 +94,7 @@ public final class MineBroConfigScreen extends Screen {
     private Button providerOllama;
     private Button providerOpenAi;
     private Button permissionButton;
+    private Button motionButton;
     private Button apiKeyButton;
     private EditBox endpointBox;
     private EditBox modelBox;
@@ -111,6 +113,7 @@ public final class MineBroConfigScreen extends Screen {
         this.openAiEndpoint = nullToEmpty(config.openAiCompatEndpoint);
         this.openAiModel = nullToEmpty(config.openAiCompatModel);
         this.permissionLevel = config.permissionLevel == null ? PermissionLevel.SAFE_ACTIONS : config.permissionLevel;
+        this.reducedMotion = config.reducedMotion;
     }
 
     @Override
@@ -202,8 +205,13 @@ public final class MineBroConfigScreen extends Screen {
         }
         y += ROW + 4;
 
+        // Shares one row with the permission toggle: PANEL_HEIGHT is fixed, and an extra row would
+        // push the status line off the bottom of the panel at small GUI scales.
+        int motionW = 104;
         permissionButton = addRenderableWidget(Button.builder(permissionLabel(), b -> cyclePermission())
-                .bounds(contentX, y, contentW, ROW).build());
+                .bounds(contentX, y, contentW - motionW - 4, ROW).build());
+        motionButton = addRenderableWidget(Button.builder(motionLabel(), b -> toggleReducedMotion())
+                .bounds(contentX + contentW - motionW, y, motionW, ROW).build());
         y += ROW + 4;
 
         int saveW = 70;
@@ -222,6 +230,10 @@ public final class MineBroConfigScreen extends Screen {
 
     private Component permissionLabel() {
         return Component.literal("Permission: " + permissionLevel);
+    }
+
+    private Component motionLabel() {
+        return Component.literal("Motion: " + (reducedMotion ? "reduced" : "full"));
     }
 
     private boolean isOpenAiCompat() {
@@ -248,6 +260,12 @@ public final class MineBroConfigScreen extends Screen {
         pendingApiKey = "";
         clearTransientNotices();
         rebuildWidgets();
+    }
+
+    private void toggleReducedMotion() {
+        reducedMotion = !reducedMotion;
+        motionButton.setMessage(motionLabel());
+        clearTransientNotices();
     }
 
     private void cyclePermission() {
@@ -303,6 +321,7 @@ public final class MineBroConfigScreen extends Screen {
             config.openAiCompatApiKey = pendingApiKey.trim();
         }
         config.permissionLevel = permissionLevel;
+        config.reducedMotion = reducedMotion;
         MineBro.configManager().save();
 
         // Rebuild and hand the new provider to the running agent loop: without this, every field
@@ -338,6 +357,7 @@ public final class MineBroConfigScreen extends Screen {
         form.openAiCompatApiKey = editingApiKey ? pendingApiKey.trim() : nullToEmpty(live.openAiCompatApiKey);
         form.openAiCompatApiKeyEnvVar = live.openAiCompatApiKeyEnvVar;
         form.permissionLevel = permissionLevel;
+        form.reducedMotion = reducedMotion;
         return form;
     }
 
